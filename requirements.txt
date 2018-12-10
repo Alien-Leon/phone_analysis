@@ -6,3 +6,5 @@ scrapy-splash==0.7.2
 click==6.7
 service-identity==17.0.0
 fake_useragent
+pymysql
+

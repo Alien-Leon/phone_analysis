@@ -33,7 +33,7 @@ class HttpBinInitValidator(BaseValidator, ValidatorRedisSpider):
     ]
     use_set = False
     task_queue = INIT_HTTP_QUEUE
-    https_tasks = ['https', 'weibo', 'zhihu']
+    https_tasks = ['https', 'weibo', 'zhihu', 'jd']
     http_tasks = ['http']
 
     def __init__(self):

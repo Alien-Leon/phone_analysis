@@ -107,7 +107,7 @@ class ProxyFetcher:
             proxies = ttl_proxies or scored_proxies
         proxies = decode_all(proxies)
         # client_logger.info('{} proxies have been fetched'.format(len(proxies)))
-        print('{} proxies have been fetched'.format(len(proxies)))
+        # print('{} proxies have been fetched'.format(len(proxies)))
         self.pool.extend(proxies)
         return self.pool
 

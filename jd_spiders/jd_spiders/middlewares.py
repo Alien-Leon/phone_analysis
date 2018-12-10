@@ -9,16 +9,20 @@ from scrapy import signals
 
 from fake_useragent import UserAgent
 from haipproxy.client.py_cli import ProxyFetcher
-from haipproxy.config.server_config import REDIS_PASSWORD
+from .server_config import REDIS_PASSWORD
 
 class RandomUserAgentMiddleware(object):
     """
-    随机更换User-Agent
+    动态代理
     """
+
     def __init__(self, crawler):
         super(RandomUserAgentMiddleware, self).__init__()
         self.ua = UserAgent()
         self.ua_type = crawler.settings.get('RANDOM_UA_TYPE', 'random')
+        self.args = dict(host='127.0.0.1', port=6379, password=REDIS_PASSWORD, db=0)
+        self.fetcher = ProxyFetcher('jd', strategy='greedy', redis_args=self.args)
+        self.fetch_count = 0
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -27,11 +31,13 @@ class RandomUserAgentMiddleware(object):
     def process_request(self, request, spider):
         def get_ua():
             return getattr(self.ua, self.ua_type)
-
-        args = dict(host='127.0.0.1', port=6379, password=REDIS_PASSWORD, db=0)
-        fetcher = ProxyFetcher('zhihu', strategy='greedy', redis_args=args)
+        # 代理池使用1000次后更换
+        self.fetch_count += 1
+        if self.fetch_count > 1000:
+            self.fetcher = ProxyFetcher('jd', strategy='greedy', redis_args=self.args)
+            self.fetch_count = 0
         request.headers.setdefault('User-Agent', get_ua())
-        request.meta['proxy'] = fetcher.get_proxy()
+        request.meta['proxy'] = self.fetcher.get_proxy()
 
 
 class JdSpidersSpiderMiddleware(object):
