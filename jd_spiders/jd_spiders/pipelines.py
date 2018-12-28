@@ -65,20 +65,24 @@ class CommentPipeline(object):
     def process_item(self, item, spider):
         if item.__class__ == Comment:
             try:
-                self.cursor.execute(
-                    """insert into jd_comment(id, user_province, content, good_id, good_name, date
-                    ,score, user_level_name, user_level_id, recommend)
-                      value (%s,%s,%s,%s,%s,%s,%s,%s, %s, %s)""",
-                    (item['id'],
-                     item['user_province'],
-                     item['content'],
-                     item['good_id'],
-                     item['good_name'],
-                     item['date'],
-                     item['score'],
-                     item['user_level_name'],
-                     item['user_level_id'],
-                     item['recommend']))
+                self.cursor.execute("""select * from jd_comment where id = %s""", item["id"])
+                ret = self.cursor.fetchone()
+                # 更新部分未成功爬取入库的数据
+                if not ret:
+                    self.cursor.execute(
+                        """insert into jd_comment(id, user_province, content, good_id, good_name, date
+                        ,score, user_level_name, user_level_id, recommend)
+                          value (%s,%s,%s,%s,%s,%s,%s,%s, %s, %s)""",
+                        (item['id'],
+                         item['user_province'],
+                         item['content'],
+                         item['good_id'],
+                         item['good_name'],
+                         item['date'],
+                         item['score'],
+                         item['user_level_name'],
+                         item['user_level_id'],
+                         item['recommend']))
                 self.connect.commit()
                 # print('save success', str(item))
             except Exception as error:

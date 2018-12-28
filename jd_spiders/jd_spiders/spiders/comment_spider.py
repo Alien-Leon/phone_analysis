@@ -27,9 +27,10 @@ class CommentSpider(scrapy.Spider):
                     comment_count = int(comment_count)
 
             comment_count /= 10
+
             comment_count += 1
 
-            page_count = comment_count if comment_count < 100 else 100
+            page_count = int(comment_count) if comment_count < 100 else 100
 
             for page in range(1, page_count):
                 url = 'https://sclub.jd.com/comment/productPageComments.action?callback=fetchJSON_comment98vv12887' \
@@ -64,18 +65,10 @@ class CommentSpider(scrapy.Spider):
                 }
                 if comment.get('afterUserComment', None):
                     d['content'] += comment['afterUserComment']['hAfterUserComment']['content']
-
                 yield Comment(d)
         except JSONDecodeError:
-            print('decode error', s)
             print('retry request', response.url)
-            if not self.error_url.get(response.url, None):
-                self.error_url[response.url] = 0
-            else:
-                self.error_url[response.url] += 1
-            # 最大重试次数
-            if self.error_url[response.url] < 4:
-                yield scrapy.Request(response.url, callback=self.parse, dont_filter=True)
+            yield scrapy.Request(response.url, callback=self.parse, dont_filter=True)
 
 
 
